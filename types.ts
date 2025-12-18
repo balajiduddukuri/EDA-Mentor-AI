@@ -4,6 +4,8 @@ export enum Sender {
   AI = 'ai'
 }
 
+export type Theme = 'neon' | 'art' | 'classic';
+
 export interface Message {
   id: string;
   sender: Sender;
@@ -41,6 +43,7 @@ export interface DatasetInfo {
   type: 'Regression' | 'Classification' | 'Clustering' | 'Time-Series';
   complexity: 'Beginner' | 'Intermediate' | 'Advanced';
   icon: string;
+  source: string;
 }
 
 export interface UserContext {
@@ -50,11 +53,7 @@ export interface UserContext {
   targetVariable?: string;
   skillLevel?: 'beginner' | 'intermediate' | 'advanced';
   currentStep: EDAStep;
+  theme: Theme;
 }
 
-export interface PhaseContent {
-  step: EDAStep;
-  title: string;
-  insights: string[];
-  dataPreview?: any;
-}
+export const AUTHOR = "BalajiDuddukuri";

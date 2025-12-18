@@ -8,15 +8,17 @@ interface ChatBubbleProps {
 
 const CodeBlock: React.FC<{ code: string }> = ({ code }) => {
   return (
-    <div className="my-4 rounded-xl bg-slate-900 overflow-hidden shadow-lg border border-slate-800">
-      <div className="bg-slate-800 px-4 py-2 text-[10px] font-black text-slate-400 border-b border-slate-700/50 flex justify-between items-center uppercase tracking-widest">
-        <span>Python Source</span>
-        <div className="flex gap-1.5">
-          <div className="w-2 h-2 rounded-full bg-slate-700"></div>
-          <div className="w-2 h-2 rounded-full bg-slate-700"></div>
-        </div>
+    <div className="my-6 rounded-[2rem] bg-black overflow-hidden border border-slate-800/50 shadow-2xl">
+      <div className="bg-slate-900/50 px-6 py-3 text-[10px] font-black text-primary border-b border-slate-800/50 flex justify-between items-center uppercase tracking-widest">
+        <span className="flex items-center gap-2">
+          <div className="w-2 h-2 rounded-full bg-red-500"></div>
+          <div className="w-2 h-2 rounded-full bg-yellow-500"></div>
+          <div className="w-2 h-2 rounded-full bg-green-500"></div>
+          <span className="ml-2">Algorithm Stream</span>
+        </span>
+        <button className="hover:text-white transition-colors">COPY</button>
       </div>
-      <pre className="p-5 text-sm text-slate-200 code-font overflow-x-auto selection:bg-indigo-500/30">
+      <pre className="p-6 text-sm text-slate-300 code-font overflow-x-auto selection:bg-primary/30">
         <code className="leading-relaxed">{code.trim()}</code>
       </pre>
     </div>
@@ -24,18 +26,14 @@ const CodeBlock: React.FC<{ code: string }> = ({ code }) => {
 };
 
 const FormattedText: React.FC<{ text: string; isAI: boolean }> = ({ text, isAI }) => {
-  // Helper to parse inline markdown: **bold**, `code`, *italic*
   const parseInline = (line: string) => {
     const parts = line.split(/(\*\*.*?\*\*|`.*?`|\*.*?\*)/g);
     return parts.map((part, i) => {
       if (part.startsWith('**') && part.endsWith('**')) {
-        return <strong key={i} className={`font-black ${isAI ? 'text-indigo-700' : 'text-white'}`}>{part.slice(2, -2)}</strong>;
+        return <strong key={i} className={`font-black underline decoration-primary/30 ${isAI ? 'text-primary' : 'text-white'}`}>{part.slice(2, -2)}</strong>;
       }
       if (part.startsWith('`') && part.endsWith('`')) {
-        return <code key={i} className={`font-mono text-[0.9em] px-1.5 py-0.5 rounded-md ${isAI ? 'bg-slate-100 text-pink-600' : 'bg-indigo-500 text-indigo-100'}`}>{part.slice(1, -1)}</code>;
-      }
-      if (part.startsWith('*') && part.endsWith('*')) {
-        return <em key={i} className="italic opacity-90">{part.slice(1, -1)}</em>;
+        return <code key={i} className="font-mono text-[0.9em] px-2 py-0.5 rounded-md bg-slate-800 text-primary border border-slate-700">{part.slice(1, -1)}</code>;
       }
       return part;
     });
@@ -44,43 +42,36 @@ const FormattedText: React.FC<{ text: string; isAI: boolean }> = ({ text, isAI }
   const segments = text.split(/(```python[\s\S]*?```|```[\s\S]*?```)/g);
 
   return (
-    <div className="space-y-1.5 leading-relaxed">
+    <div className="space-y-4">
       {segments.map((segment, i) => {
         if (segment.startsWith('```')) {
-          const code = segment.replace(/```python|```/g, '');
-          return <CodeBlock key={i} code={code} />;
+          return <CodeBlock key={i} code={segment.replace(/```python|```/g, '')} />;
         }
 
         const lines = segment.split('\n');
         return (
-          <div key={i} className="space-y-2">
+          <div key={i} className="space-y-3">
             {lines.map((line, j) => {
               const trimmed = line.trim();
-              if (!trimmed) return <div key={j} className="h-1" />;
+              if (!trimmed) return null;
 
-              // Handle Headings
               if (trimmed.startsWith('###')) {
-                return <h4 key={j} className={`text-sm font-black mt-6 mb-2 uppercase tracking-widest ${isAI ? 'text-slate-900' : 'text-white'}`}>{parseInline(trimmed.replace(/^###\s*/, ''))}</h4>;
+                return <h4 key={j} className="text-xs font-black mt-8 mb-2 uppercase tracking-[0.3em] text-primary underline underline-offset-8 decoration-2">{parseInline(trimmed.replace(/^###\s*/, ''))}</h4>;
               }
-              if (trimmed.startsWith('##') || (trimmed.startsWith('**') && trimmed.endsWith('**') && line.length < 50)) {
-                 const cleanText = trimmed.replace(/^##\s*/, '').replace(/\*\*/g, '');
-                 return <h3 key={j} className={`font-black text-lg mt-6 mb-3 tracking-tight ${isAI ? 'text-indigo-600' : 'text-white'}`}>{parseInline(cleanText)}</h3>;
+              if (trimmed.startsWith('##')) {
+                return <h3 key={j} className="font-black text-2xl mt-10 mb-4 serif-font text-white">{parseInline(trimmed.replace(/^##\s*/, ''))}</h3>;
               }
 
-              // Handle Lists
-              if (trimmed.startsWith('-') || trimmed.startsWith('*') || /^\d+\./.test(trimmed)) {
-                const isOrdered = /^\d+\./.test(trimmed);
-                const content = trimmed.replace(/^[-*]\s*|^\d+\.\s*/, '');
+              if (trimmed.startsWith('-') || trimmed.startsWith('*')) {
                 return (
-                  <div key={j} className="flex items-start gap-3 ml-1 py-0.5">
-                    <span className={`shrink-0 mt-1.5 w-1.5 h-1.5 rounded-full ${isAI ? 'bg-indigo-400' : 'bg-indigo-200'}`}></span>
-                    <span className="flex-1">{parseInline(content)}</span>
+                  <div key={j} className="flex items-start gap-3 ml-2 group">
+                    <div className="w-1.5 h-1.5 rounded-full bg-primary mt-2 shadow-[0_0_8px_rgba(0,242,255,0.6)] group-hover:scale-125 transition-transform"></div>
+                    <span className="text-slate-300 font-medium leading-relaxed">{parseInline(trimmed.replace(/^[-*]\s*/, ''))}</span>
                   </div>
                 );
               }
 
-              // Standard Paragraph
-              return <p key={j} className={`${isAI ? 'text-slate-600 font-medium' : 'text-indigo-50'}`}>{parseInline(line)}</p>;
+              return <p key={j} className={`leading-relaxed text-sm font-medium ${isAI ? 'text-slate-300' : 'text-slate-100'}`}>{parseInline(line)}</p>;
             })}
           </div>
         );
@@ -93,40 +84,39 @@ const ChatBubble: React.FC<ChatBubbleProps> = ({ message }) => {
   const isAI = message.sender === Sender.AI;
 
   return (
-    <div className={`flex w-full mb-8 ${isAI ? 'justify-start' : 'justify-end'} animate-in fade-in slide-in-from-bottom-2 duration-300`}>
+    <section 
+      className={`flex w-full mb-10 ${isAI ? 'justify-start' : 'justify-end'} animate-in fade-in slide-in-from-bottom-4 duration-500`}
+      aria-labelledby={`msg-meta-${message.id}`}
+    >
       <div
-        className={`max-w-[88%] rounded-[2rem] p-6 shadow-sm relative group transition-all hover:shadow-md ${
+        className={`max-w-[90%] rounded-[2.5rem] p-8 relative overflow-hidden transition-all ${
           isAI
-            ? 'bg-white border border-slate-200 text-slate-800 rounded-bl-none'
-            : 'bg-indigo-600 text-white rounded-br-none shadow-indigo-200'
+            ? 'bg-card border border-slate-800/50 shadow-2xl rounded-bl-none'
+            : 'bg-indigo-900/30 border border-indigo-500/40 text-white rounded-br-none'
         }`}
       >
-        <div className="flex items-center justify-between mb-4 border-b pb-2 border-slate-100/50">
-          <div className="flex items-center gap-2">
-            <div className={`w-2 h-2 rounded-full ${isAI ? 'bg-indigo-500 animate-pulse' : 'bg-indigo-300'}`}></div>
-            <span className={`text-[10px] font-black uppercase tracking-[0.2em] ${isAI ? 'text-indigo-600' : 'text-indigo-100'}`}>
-              {isAI ? 'Mentor AI' : 'Student'}
+        <div id={`msg-meta-${message.id}`} className="flex items-center justify-between mb-6 pb-3 border-b border-slate-800/30">
+          <div className="flex items-center gap-3">
+            <div className={`w-2.5 h-2.5 rounded-full ${isAI ? 'bg-primary animate-pulse' : 'bg-indigo-400'}`}></div>
+            <span className={`text-[10px] font-black uppercase tracking-[0.3em] ${isAI ? 'text-primary' : 'text-indigo-300'}`}>
+              {isAI ? 'PROCTOR' : 'ARCHITECT'}
             </span>
           </div>
-          <span className={`text-[10px] font-bold opacity-40 ${isAI ? 'text-slate-400' : 'text-indigo-200'}`}>
-            {new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-          </span>
+          <time className="text-[9px] font-bold text-slate-500 tracking-widest">
+            {new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+          </time>
         </div>
         
-        {isAI ? (
-          <FormattedText text={message.text} isAI={isAI} />
-        ) : (
-          <p className="whitespace-pre-wrap font-medium leading-relaxed">{message.text}</p>
-        )}
-
-        {/* Decorative corner tag for AI */}
+        <FormattedText text={message.text} isAI={isAI} />
+        
         {isAI && (
-          <div className="absolute -left-1 bottom-0 translate-y-full pt-1 opacity-0 group-hover:opacity-100 transition-opacity">
-            <span className="text-[9px] font-black text-slate-300 uppercase tracking-tighter">Verified Logic Engine</span>
+          <div className="mt-8 flex gap-2">
+            <div className="px-3 py-1 bg-slate-800/50 rounded-lg text-[8px] font-black text-slate-500 uppercase tracking-widest border border-slate-700">Audit Pass</div>
+            <div className="px-3 py-1 bg-primary/10 rounded-lg text-[8px] font-black text-primary uppercase tracking-widest border border-primary/20">Verified Insight</div>
           </div>
         )}
       </div>
-    </div>
+    </section>
   );
 };
 
