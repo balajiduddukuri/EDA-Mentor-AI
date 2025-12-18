@@ -1,0 +1,5 @@
+{
+  "name": "EDA Mentor AI",
+  "description": "An interactive tutor that guides students through Exploratory Data Analysis with step-by-step explanations, Python code, and conceptual Q&A.",
+  "requestFramePermissions": []
+}
